@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import webbrowser
 
 BASE_URL = "https://api-298313983231.us-central1.run.app/api"  # Replace with your Django server URL
 
@@ -75,7 +76,6 @@ def save_place():
 
 # Function to search places
 def search_places():
-    # Placeholder for user input
     st.title("Search Places")
     query = st.text_input("Enter a query to search places:")
 
@@ -105,10 +105,18 @@ def search_places():
             st.error("An error occurred while connecting to the API.")
             st.write(f"Error details: {e}")
 
+# Function to open GraphQL interface (GraphiQL)
+def open_graphql_interface():
+    st.title("GraphQL Interface")
+    st.write("Click the button below to open the GraphQL interface (GraphiQL) where you can interact with the GraphQL API.")
+
+
+    webbrowser.open("https://api-298313983231.us-central1.run.app/graphql/")
+
 # Main Streamlit app
 def main():
     st.sidebar.title("Navigation")
-    choice = st.sidebar.selectbox("Go to", ["Register", "Login", "Save Place", "Search Places"])
+    choice = st.sidebar.selectbox("Go to", ["Register", "Login", "Save Place", "Search Places", "Open GraphQL Interface"])
 
     if choice == "Register":
         register()
@@ -118,6 +126,8 @@ def main():
         save_place()
     elif choice == "Search Places":
         search_places()
+    elif choice == "Open GraphQL Interface":
+        open_graphql_interface()
 
 if __name__ == "__main__":
     main()
