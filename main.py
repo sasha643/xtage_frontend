@@ -108,11 +108,11 @@ def search_places():
 # Function to open GraphQL interface (GraphiQL)
 def open_graphql_interface():
     st.title("GraphQL Interface")
-    st.write("Click the button below to open the GraphQL interface (GraphiQL) where you can interact with the GraphQL API.")
+    st.write("Click the link below to open the GraphQL interface (GraphiQL) where you can interact with the GraphQL API.")
 
-    if st.button("Open GraphQL Interface"):
-        # Redirect user to the default GraphiQL interface
-        webbrowser.open("https://api-298313983231.us-central1.run.app/graphql/")
+    # Create a clickable link to the GraphQL interface
+    graphql_url = "https://api-298313983231.us-central1.run.app/graphql/"
+    st.markdown(f"[Open GraphQL Interface]({graphql_url})", unsafe_allow_html=True)
 
 # Main Streamlit app
 def main():
