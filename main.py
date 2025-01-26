@@ -1,8 +1,9 @@
 import streamlit as st
 import requests
-import webbrowser
+import json
 
 BASE_URL = "https://api-298313983231.us-central1.run.app/api"  # Replace with your Django server URL
+GRAPHQL_ENDPOINT = "https://api-298313983231.us-central1.run.app/graphql/"
 
 # Set up session state for tokens
 if "access_token" not in st.session_state:
@@ -76,6 +77,7 @@ def save_place():
 
 # Function to search places
 def search_places():
+    # Placeholder for user input
     st.title("Search Places")
     query = st.text_input("Enter a query to search places:")
 
@@ -105,19 +107,69 @@ def search_places():
             st.error("An error occurred while connecting to the API.")
             st.write(f"Error details: {e}")
 
-# Function to open GraphQL interface (GraphiQL)
-def open_graphql_interface():
-    st.title("GraphQL Interface")
-    st.write("Click the link below to open the GraphQL interface (GraphiQL) where you can interact with the GraphQL API.")
+# GraphQL query to fetch places by username
+def fetch_places_by_user(username):
+    query = """
+    query getPlacesByUser($username: String!) {
+        placesByUser(username: $username) {
+            name
+            address
+            latitude
+            longitude
+            photoReference
+        }
+    }
+    """
+    
+    variables = {"username": username}
+    
+    headers = {
+        "Content-Type": "application/json",
+    }
+    
+    response = requests.post(GRAPHQL_ENDPOINT, json={"query": query, "variables": variables}, headers=headers)
+    
+    if response.status_code == 200:
+        try:
+            data = response.json()
+            return data["data"]["placesByUser"]
+        except KeyError:
+            st.error("Error parsing GraphQL response.")
+            return []
+    else:
+        st.error(f"GraphQL query failed with status code {response.status_code}.")
+        return []
 
-    # Create a clickable link to the GraphQL interface
-    graphql_url = "https://api-298313983231.us-central1.run.app/graphql/"
-    st.markdown(f"[Open GraphQL Interface]({graphql_url})", unsafe_allow_html=True)
+# Function to search places by user (GraphQL)
+def search_places_by_user():
+    st.title("Search Places by User (GraphQL)")
+
+    username = st.text_input("Enter Username to fetch saved places:")
+
+    if st.button("Search"):
+        if not username.strip():
+            st.error("Please enter a username.")
+            return
+
+        # Fetch places by username using GraphQL
+        places = fetch_places_by_user(username)
+
+        if places:
+            st.success("Places saved by the user:")
+            for place in places:
+                st.write(f"Name: {place['name']}")
+                st.write(f"Address: {place['address']}")
+                st.write(f"Latitude: {place['latitude']}")
+                st.write(f"Longitude: {place['longitude']}")
+                st.write(f"Photo Reference: {place['photoReference']}")
+                st.write("---")
+        else:
+            st.warning("No places found for the given user.")
 
 # Main Streamlit app
 def main():
     st.sidebar.title("Navigation")
-    choice = st.sidebar.selectbox("Go to", ["Register", "Login", "Save Place", "Search Places", "Open GraphQL Interface"])
+    choice = st.sidebar.selectbox("Go to", ["Register", "Login", "Save Place", "Search Places", "Search Places by User"])
 
     if choice == "Register":
         register()
@@ -127,8 +179,8 @@ def main():
         save_place()
     elif choice == "Search Places":
         search_places()
-    elif choice == "Open GraphQL Interface":
-        open_graphql_interface()
+    elif choice == "Search Places by User":
+        search_places_by_user()
 
 if __name__ == "__main__":
     main()
